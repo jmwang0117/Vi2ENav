@@ -30,6 +30,8 @@ struct GridNode
 
 	double gScore{inf}, fScore{inf};
 	GridNodePtr cameFrom{NULL};
+	double penalty_g_score;
+    int motion_state {0}; //0: rolling; 1:flying
 };
 
 class NodeComparator
@@ -75,11 +77,14 @@ private:
 	std::priority_queue<GridNodePtr, std::vector<GridNodePtr>, NodeComparator> openSet_;
 
 	int rounds_{0};
+	// Air-Ground Robot
+	double ground_judge_;
+	double aerial_penalty_;
 
 public:
 	typedef std::shared_ptr<AStar> Ptr;
 
-	AStar(){};
+	AStar(double ground_judge = 0.1, double aerial_penalty = 100);
 	~AStar();
 
 	void initGridMap(GridMap::Ptr occ_map, const Eigen::Vector3i pool_size);
