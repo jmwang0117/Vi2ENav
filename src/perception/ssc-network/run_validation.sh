@@ -1,0 +1,1 @@
+python validate.py --weights /root/SSC-RS/weights/weights_epoch_035.pth --dset_root /root/datasets/semantic_kitti/dataset/sequences
