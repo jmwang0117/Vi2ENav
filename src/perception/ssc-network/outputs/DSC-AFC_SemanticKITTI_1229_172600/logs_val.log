@@ -56,3 +56,55 @@
 2023-11-27 18:36:40,566 -- => ============ Network Validation Done ============
 2023-11-27 18:36:40,567 -- Inference time per frame is 0.0715 seconds
 
+2023-11-29 09:37:51,555 -- ============ Validation weights: "/root/SSC-RS/weights/weights_epoch_035.pth" ============
+
+2023-11-29 09:37:52,146 -- => Loading network architecture...
+2023-11-29 09:37:52,349 -- => Model Parameters: 23.069487 M
+2023-11-29 09:37:52,349 -- => Loading network weights...
+2023-11-29 09:37:52,629 -- => Model loaded at /root/SSC-RS/weights/weights_epoch_035.pth
+2023-11-29 09:37:52,660 -- => Passing the network on the validation set...
+2023-11-29 09:38:03,514 -- => Iteration [20/408], Train Losses: total = 17.833574,  semantic_1_1 = 3.410219,  semantic_seg = 12.759589,  scene_completion = 1.663766
+2023-11-29 09:38:13,883 -- => Iteration [40/408], Train Losses: total = 16.183712,  semantic_1_1 = 2.985217,  semantic_seg = 11.424337,  scene_completion = 1.774157
+2023-11-29 09:38:23,775 -- => Iteration [60/408], Train Losses: total = 19.949726,  semantic_1_1 = 3.035455,  semantic_seg = 15.469769,  scene_completion = 1.444503
+2023-11-29 09:38:33,270 -- => Iteration [80/408], Train Losses: total = 20.342943,  semantic_1_1 = 3.194216,  semantic_seg = 15.682326,  scene_completion = 1.466402
+2023-11-29 09:38:42,818 -- => Iteration [100/408], Train Losses: total = 21.862976,  semantic_1_1 = 3.691886,  semantic_seg = 16.067692,  scene_completion = 2.103396
+2023-11-29 09:38:52,574 -- => Iteration [120/408], Train Losses: total = 22.399942,  semantic_1_1 = 3.553380,  semantic_seg = 17.330959,  scene_completion = 1.515605
+2023-11-29 09:39:02,243 -- => Iteration [140/408], Train Losses: total = 21.106461,  semantic_1_1 = 3.541882,  semantic_seg = 16.067345,  scene_completion = 1.497234
+2023-11-29 09:39:12,225 -- => Iteration [160/408], Train Losses: total = 16.491148,  semantic_1_1 = 3.491633,  semantic_seg = 11.587831,  scene_completion = 1.411685
+2023-11-29 09:39:23,123 -- => Iteration [180/408], Train Losses: total = 19.913307,  semantic_1_1 = 3.802018,  semantic_seg = 14.747792,  scene_completion = 1.363496
+2023-11-29 09:39:32,966 -- => Iteration [200/408], Train Losses: total = 20.537069,  semantic_1_1 = 3.234915,  semantic_seg = 15.583376,  scene_completion = 1.718778
+2023-11-29 09:39:41,637 -- => Iteration [220/408], Train Losses: total = 21.647158,  semantic_1_1 = 3.047455,  semantic_seg = 16.927021,  scene_completion = 1.672682
+2023-11-29 09:39:50,699 -- => Iteration [240/408], Train Losses: total = 24.323885,  semantic_1_1 = 3.680361,  semantic_seg = 18.338242,  scene_completion = 2.305282
+2023-11-29 09:39:59,913 -- => Iteration [260/408], Train Losses: total = 24.485950,  semantic_1_1 = 3.424459,  semantic_seg = 19.202730,  scene_completion = 1.858761
+2023-11-29 09:40:10,232 -- => Iteration [280/408], Train Losses: total = 21.416458,  semantic_1_1 = 3.428317,  semantic_seg = 16.023884,  scene_completion = 1.964256
+2023-11-29 09:40:20,633 -- => Iteration [300/408], Train Losses: total = 20.911079,  semantic_1_1 = 3.848379,  semantic_seg = 15.135446,  scene_completion = 1.927256
+2023-11-29 09:40:30,523 -- => Iteration [320/408], Train Losses: total = 18.815948,  semantic_1_1 = 3.185704,  semantic_seg = 13.775082,  scene_completion = 1.855163
+2023-11-29 09:40:40,100 -- => Iteration [340/408], Train Losses: total = 20.164373,  semantic_1_1 = 4.161731,  semantic_seg = 13.364746,  scene_completion = 2.637896
+2023-11-29 09:40:49,756 -- => Iteration [360/408], Train Losses: total = 22.714733,  semantic_1_1 = 3.562533,  semantic_seg = 17.083385,  scene_completion = 2.068816
+2023-11-29 09:40:59,488 -- => Iteration [380/408], Train Losses: total = 20.400154,  semantic_1_1 = 2.944231,  semantic_seg = 16.043903,  scene_completion = 1.412019
+2023-11-29 09:41:09,072 -- => Iteration [400/408], Train Losses: total = 22.627645,  semantic_1_1 = 3.719116,  semantic_seg = 17.685329,  scene_completion = 1.223199
+2023-11-29 09:41:13,365 -- => [Total Validation Loss = 20.713510513305664]
+2023-11-29 09:41:13,366 -- => [Scale 1_1: Loss = 3.364127 - mIoU = 0.083277 - IoU = 0.502974 - P = 0.821819 - R = 0.564538 - F1 = 0.669305]
+2023-11-29 09:41:13,366 -- => Training set class-wise IoU:
+2023-11-29 09:41:13,366 --     => IoU car: 0.001562
+2023-11-29 09:41:13,366 --     => IoU bicycle: 0.000283
+2023-11-29 09:41:13,366 --     => IoU motorcycle: 0.000000
+2023-11-29 09:41:13,366 --     => IoU truck: 0.000000
+2023-11-29 09:41:13,366 --     => IoU other-vehicle: 0.000000
+2023-11-29 09:41:13,367 --     => IoU person: 0.000466
+2023-11-29 09:41:13,367 --     => IoU bicyclist: 0.000000
+2023-11-29 09:41:13,367 --     => IoU motorcyclist: 0.000000
+2023-11-29 09:41:13,367 --     => IoU road: 0.282701
+2023-11-29 09:41:13,367 --     => IoU parking: 0.000000
+2023-11-29 09:41:13,367 --     => IoU sidewalk: 0.141192
+2023-11-29 09:41:13,367 --     => IoU other-ground: 0.000832
+2023-11-29 09:41:13,367 --     => IoU building: 0.144306
+2023-11-29 09:41:13,367 --     => IoU fence: 0.066974
+2023-11-29 09:41:13,367 --     => IoU vegetation: 0.278860
+2023-11-29 09:41:13,367 --     => IoU trunk: 0.133858
+2023-11-29 09:41:13,367 --     => IoU terrain: 0.322608
+2023-11-29 09:41:13,368 --     => IoU pole: 0.157500
+2023-11-29 09:41:13,368 --     => IoU traffic-sign: 0.051128
+2023-11-29 09:41:13,368 -- => ============ Network Validation Done ============
+2023-11-29 09:41:13,368 -- Inference time per frame is 0.0717 seconds
+

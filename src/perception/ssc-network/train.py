@@ -21,6 +21,7 @@ from utils.optimizer import build_optimizer, build_scheduler
 from utils.io_tools import dict_to
 from utils.metrics import Metrics
 import utils.checkpoint as checkpoint
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"  # Specify the fourth GPU
 
 def parse_args():
     parser = argparse.ArgumentParser(description='DSC training')
