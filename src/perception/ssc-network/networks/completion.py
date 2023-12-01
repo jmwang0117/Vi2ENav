@@ -3,7 +3,7 @@ import torch.nn.functional as F
 import torch
 
 from utils.lovasz_losses import lovasz_softmax
-
+from networks.CrissCrossAttention import CrissCrossAttention
 
 class ResBlock(nn.Module):
     def __init__(self, in_dim, out_dim, kernel_size, padding, stride, dilation=1):
@@ -36,7 +36,11 @@ class CompletionBranch(nn.Module):
         self.block_1 = make_layers(16, 16, kernel_size=3, padding=1, stride=1, dilation=1, blocks=1) # 1/2, 16
         self.block_2 = make_layers(16, 32, kernel_size=3, padding=1, stride=1, dilation=1, downsample=True, blocks=1) # 1/4, 32
         self.block_3 = make_layers(32, 64, kernel_size=3, padding=2, stride=1, dilation=2, downsample=True, blocks=1)  # 1/8, 64
-
+        
+        self.criss_cross_attention_1 = CrissCrossAttention(16) # CCA
+        self.criss_cross_attention_2 = CrissCrossAttention(32) # CCA
+        self.criss_cross_attention_3 = CrissCrossAttention(64) # CCA
+        
         self.reduction_1 = nn.Sequential(
             nn.Conv2d(256, 128, kernel_size=1),
             nn.ReLU(),
@@ -66,9 +70,12 @@ class CompletionBranch(nn.Module):
     def forward_once(self, inputs):
         out = F.relu(self.in_layer(inputs))
         res1 = self.block_1(out)  # B, 16, 16, 128, 128
+        res1 = self.criss_cross_attention_1(res1)
         res2 = self.block_2(res1)  # B, 32, 8, 64, 64
+        res2 = self.criss_cross_attention_2(res2)
         res3 = self.block_3(res2)  # B, 64, 4, 32, 32
-
+        res3 = self.criss_cross_attention_3(res3)
+        
         bev_1 = self.reduction_1(res1.flatten(1, 2)) # B, 64, 128, 128
         bev_2 = self.reduction_2(res2.flatten(1, 2)) # B, 128, 64, 64
         bev_3 = res3.flatten(1, 2) # B, 256, 32, 32

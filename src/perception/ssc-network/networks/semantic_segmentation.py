@@ -10,6 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from utils.lovasz_losses import lovasz_softmax
+from networks.CrissCrossAttention import CrissCrossAttention
 
 class BasicBlock(spconv.SparseModule):
     def __init__(self, C_in, C_out, indice_key):
@@ -164,8 +165,11 @@ class SemanticBranch(nn.Module):
         self.sizes = sizes
         self.nbr_class = nbr_class
         self.conv1_block = SFE(init_size, init_size, "svpfe_0")
+        self.criss_cross_attention_1 = CrissCrossAttention(init_size) # CCA
         self.conv2_block = SFE(64, 64, "svpfe_1")
+        self.criss_cross_attention_2 = CrissCrossAttention(64) # CCA
         self.conv3_block = SFE(128, 128, "svpfe_2")
+        self.criss_cross_attention_3 = CrissCrossAttention(128) # CCA
 
         self.proj1_block = SGFE(input_channels=init_size, output_channels=64,\
                                 reduce_channels=init_size, name="proj1")
@@ -215,6 +219,7 @@ class SemanticBranch(nn.Module):
             vw_features, coord.int(), np.array(self.sizes, np.int32)[::-1], batch_size
         )
         conv1_output = self.conv1_block(input_tensor)
+        conv1_output = self.criss_cross_attention_1(conv1_output) # CCA
         proj1_vw, vw1_coord, pw1_coord = self.proj1_block(info, conv1_output.features, output_scale=2, input_coords=coord.int(),
             input_coords_inv=full_coord)
         proj1_bev = self.bev_projection(proj1_vw, vw1_coord, (np.array(self.sizes, np.int32) // 2)[::-1], batch_size)
@@ -223,6 +228,7 @@ class SemanticBranch(nn.Module):
             proj1_vw, vw1_coord.int(), (np.array(self.sizes, np.int32) // 2)[::-1], batch_size
         )
         conv2_output = self.conv2_block(conv2_input_tensor)
+        conv2_output = self.criss_cross_attention_2(conv2_output) # CCA
         proj2_vw, vw2_coord, pw2_coord = self.proj2_block(info, conv2_output.features, output_scale=4, input_coords=vw1_coord.int(),
             input_coords_inv=pw1_coord)
         proj2_bev = self.bev_projection(proj2_vw, vw2_coord, (np.array(self.sizes, np.int32) // 4)[::-1], batch_size)
@@ -231,6 +237,7 @@ class SemanticBranch(nn.Module):
             proj2_vw, vw2_coord.int(), (np.array(self.sizes, np.int32) // 4)[::-1], batch_size
         )
         conv3_output = self.conv3_block(conv3_input_tensor)
+        conv3_output = self.criss_cross_attention_3(conv3_output) # CCA
         proj3_vw, vw3_coord, _ = self.proj3_block(info, conv3_output.features, output_scale=8, input_coords=vw2_coord.int(),
             input_coords_inv=pw2_coord)
         proj3_bev = self.bev_projection(proj3_vw, vw3_coord, (np.array(self.sizes, np.int32) // 8)[::-1], batch_size)
