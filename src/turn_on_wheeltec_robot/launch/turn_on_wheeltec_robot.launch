@@ -31,32 +31,8 @@
   </include>
   </group>
 
-  <group if="$(eval (car_mode=='mini_mec_moveit_six' or car_mode=='mini_4wd_moveit_six') and if_voice==true)" >
-  <!-- 开启机械臂语音相关节点  -->
-  <include file="$(find wheeltec_arm_pick)/launch/base_serial.launch" >
-    <arg name="if_voice_control" value="true"/>
-    <arg name="moveit_config" value="true"/>
-    <arg name="preset" value="true"/>
-  </include>
-  </group>
-   
 
-  <!--当开启导航功能时 启用导航算法选择-->
-  <!--当开启2D或3D导航功能时-->
-  <!-- 开启teb_local_planner导航算法 与dwa算法相比效果更佳-->
-  <include file="$(find turn_on_wheeltec_robot)/launch/include/teb_local_planner.launch" if="$(arg navigation)">
-  <!-- 开启dwa_local_planner导航算法-->
-  <!-- <include file="$(find turn_on_wheeltec_robot)/launch/include/dwa_local_planner.launch" if="$(arg navigation)"> -->
-    <arg name="car_mode" value="$(arg car_mode)"/>
-  </include>
 
-  <!--当开启纯视觉导航功能时-->
-  <!-- 开启teb_local_planner导航算法 与dwa算法相比效果更佳-->
-  <include file="$(find turn_on_wheeltec_robot)/launch/include/teb_local_planner_pure3d.launch" if="$(arg pure3d_nav)">
-  <!-- 开启dwa_local_planner导航算法-->
-  <!-- <include file="$(find turn_on_wheeltec_robot)/launch/include/dwa_local_planner_pure3d.launch" if="$(arg pure3d_nav)"> -->
-    <arg name="car_mode" value="$(arg car_mode)"/>
-  </include>
 
   <!-- 发布用于建图、导航的TF关系与小车外形可视化 -->
   <include file="$(find turn_on_wheeltec_robot)/launch/robot_model_visualization.launch" unless="$(arg repeat)">

@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <robot name="wheeltec_robot">
 
-    <link name="base_link">
+    <link name="ugv_base_link">
         <visual>
             <origin xyz=" 0.08 0 0.04" rpy="0 0 0" />
             <geometry>
@@ -15,7 +15,7 @@
 
     <joint name="left_wheel_joint" type="continuous">
         <origin xyz="0 0.08 0.0325" rpy="1.57 0 0"/>
-        <parent link="base_link"/>
+        <parent link="ugv_base_link"/>
         <child link="left_wheel_link"/>
         <axis xyz="0 1 0"/>
     </joint>
@@ -34,7 +34,7 @@
 
     <joint name="right_wheel_joint" type="continuous">
         <origin xyz="0 -0.08 0.0325" rpy="1.57 0 0"/>
-        <parent link="base_link"/>
+        <parent link="ugv_base_link"/>
         <child link="right_wheel_link"/>
         <axis xyz="0 1 0"/>
     </joint>
@@ -53,7 +53,7 @@
 
       <joint name="left_front_joint" type="continuous">
         <origin xyz="0.14 0.08 0.0325" rpy="1.57 0 0"/>
-        <parent link="base_link"/>
+        <parent link="ugv_base_link"/>
         <child link="left_front_link"/>
         <axis xyz="0 1 0"/>
     </joint>
@@ -72,7 +72,7 @@
 
     <joint name="right_front_joint" type="continuous">
         <origin xyz="0.14 -0.08 0.0325" rpy="1.57 0 0"/>
-        <parent link="base_link"/>
+        <parent link="ugv_base_link"/>
         <child link="right_front_link"/>
         <axis xyz="0 1 0"/>
     </joint>

@@ -53,8 +53,6 @@ def airpub():
 
          #this is ENU
 
-         
-
          pub_pose.publish(pose_msg)
          position = (pose_msg.pose.position.x,pose_msg.pose.position.y,pose_msg.pose.position.z)
          orientation = (pose_msg.pose.orientation.x,pose_msg.pose.orientation.y,pose_msg.pose.orientation.z,pose_msg.pose.orientation.w)
