@@ -84,7 +84,7 @@ private:
 public:
 	typedef std::shared_ptr<AStar> Ptr;
 
-	AStar(double ground_judge = 0.1, double aerial_penalty = 100);
+	AStar(double ground_judge = -0.01, double aerial_penalty = 100);
 	~AStar();
 
 	void initGridMap(GridMap::Ptr occ_map, const Eigen::Vector3i pool_size);
