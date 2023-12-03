@@ -47,7 +47,8 @@ void GridMap::initMap(ros::NodeHandle &nh)
 
   node_.param("grid_map/frame_id", mp_.frame_id_, string("world"));
   node_.param("grid_map/local_map_margin", mp_.local_map_margin_, 1);
-  node_.param("grid_map/ground_height", mp_.ground_height_, 1.0);
+  //node_.param("grid_map/ground_height", mp_.ground_height_, 1.0);
+  node_.param("grid_map/ground_height", mp_.ground_height_, -0.2);
 
   mp_.resolution_inv_ = 1 / mp_.resolution_;
   mp_.map_origin_ = Eigen::Vector3d(-x_size / 2.0, -y_size / 2.0, mp_.ground_height_);

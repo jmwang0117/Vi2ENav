@@ -83,10 +83,10 @@ private:
 
 public:
 	typedef std::shared_ptr<AStar> Ptr;
-
-	AStar(double ground_judge = -0.01, double aerial_penalty = 100);
+	
+	AStar();
 	~AStar();
-
+	void setParam(ros::NodeHandle& nh);
 	void initGridMap(GridMap::Ptr occ_map, const Eigen::Vector3i pool_size);
 
 	bool AstarSearch(const double step_size, Eigen::Vector3d start_pt, Eigen::Vector3d end_pt);

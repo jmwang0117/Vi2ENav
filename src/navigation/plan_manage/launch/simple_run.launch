@@ -66,6 +66,8 @@
     <arg name="point4_y" value="0.5" />
     <arg name="point4_z" value="0.0" />
     
+    <!-- judging threshold for motion state switching -->
+    <arg name="ground_judge" value="0.1" />
   </include>
 
   <!-- trajectory server -->

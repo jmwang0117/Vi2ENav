@@ -3,10 +3,10 @@
 using namespace std;
 using namespace Eigen;
 
-AStar::AStar(double ground_judge, double aerial_penalty)
-    : ground_judge_(ground_judge), aerial_penalty_(aerial_penalty) {
+AStar::AStar() {
     // Your initialization code here, if any
 }
+
 
 AStar::~AStar()
 {
@@ -15,6 +15,14 @@ AStar::~AStar()
             for (int k = 0; k < POOL_SIZE_(2); k++)
                 delete GridNodeMap_[i][j][k];
 }
+
+void AStar::setParam(ros::NodeHandle& nh) {
+  nh.param("astar/aerial_penalty", aerial_penalty_, 0.0);
+  nh.param("astar/ground_judge", ground_judge_, 0.0);
+  cout << "aerial_penalty:" << aerial_penalty_ << endl;
+  cout << "ground_judge:" << ground_judge_ << endl;
+}
+
 
 void AStar::initGridMap(GridMap::Ptr occ_map, const Eigen::Vector3i pool_size)
 {
@@ -382,10 +390,6 @@ bool AStar::AstarSearch(const double step_size, Vector3d start_pt, Vector3d end_
 
     return false;
 }
-
-
-
-
 
 vector<Vector3d> AStar::getPath()
 {

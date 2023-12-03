@@ -16,6 +16,7 @@
   <arg name="max_vel"/>
   <arg name="max_acc"/>
   <arg name="planning_horizon"/>
+  <arg name="ground_judge"/>
 
   <arg name="point_num"/>
   <arg name="point0_x"/>
@@ -78,7 +79,7 @@
     <param name="grid_map/local_update_range_z"  value="4.5" /> 
     <param name="grid_map/obstacles_inflation"     value="0.08" /> 
     <param name="grid_map/local_map_margin" value="30"/>
-    <param name="grid_map/ground_height"        value="-0.2"/>
+    <param name="grid_map/ground_height"        value="0.05"/>
     <!-- camera parameter -->
     <param name="grid_map/cx" value="$(arg cx)"/>
     <param name="grid_map/cy" value="$(arg cy)"/>
@@ -114,6 +115,10 @@
     <param name="manager/control_points_distance" value="0.4" type="double"/>
     <param name="manager/feasibility_tolerance" value="0.05" type="double"/>
     <param name="manager/planning_horizon" value="$(arg planning_horizon)" type="double"/>
+
+  <!-- astar path searching -->
+  <param name="astar/aerial_penalty" value="2" type="double"/>
+  <param name="astar/ground_judge" value="$(arg ground_judge)" type="double"/>
 
   <!-- trajectory optimization -->
     <param name="optimization/lambda_smooth" value="1.0" type="double"/>
