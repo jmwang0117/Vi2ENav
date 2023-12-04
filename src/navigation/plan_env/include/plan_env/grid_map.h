@@ -75,7 +75,7 @@ struct MappingParameters {
   int local_map_margin_;
 
   /* visualization and computation time display */
-  double visualization_truncate_height_, virtual_ceil_height_, ground_height_;
+  double visualization_truncate_height_, virtual_ceil_height_, ground_height_, ground_judge_;
   bool show_occ_time_;
 
   /* active mapping */
@@ -89,6 +89,8 @@ struct MappingData {
 
   std::vector<double> occupancy_buffer_;
   std::vector<char> occupancy_buffer_inflate_;
+  //AGR
+  std::vector< Eigen::Vector3d> ground_occupancy_buffer_;
 
   // camera position and pose data
 
@@ -111,7 +113,10 @@ struct MappingData {
   // depth image projected point cloud
 
   vector<Eigen::Vector3d> proj_points_;
-  int proj_points_cnt;
+  vector<Eigen::Vector3d> proj_points_to_pub, ground_points_to_pub_, obstacle_points_to_pub_;
+  int proj_points_cnt, ground_points_cnt, obstacle_points_cnt;
+  vector<int> proj_points_index_, ground_points_index_, obstacle_points_index_;
+  int proj_index;
 
   // flag buffers for speeding up raycasting
 
@@ -142,7 +147,7 @@ public:
   // occupancy map management
   void resetBuffer();
   void resetBuffer(Eigen::Vector3d min, Eigen::Vector3d max);
-
+  bool ground_occupied_flag;
   inline void posToIndex(const Eigen::Vector3d& pos, Eigen::Vector3i& id);
   inline void indexToPos(const Eigen::Vector3i& id, Eigen::Vector3d& pos);
   inline int toAddress(const Eigen::Vector3i& id);
@@ -155,12 +160,17 @@ public:
   inline int getOccupancy(Eigen::Vector3d pos);
   inline int getOccupancy(Eigen::Vector3i id);
   inline int getInflateOccupancy(Eigen::Vector3d pos);
+  inline int getGroundOccupancy();
 
   inline void boundIndex(Eigen::Vector3i& id);
   inline bool isUnknown(const Eigen::Vector3i& id);
   inline bool isUnknown(const Eigen::Vector3d& pos);
   inline bool isKnownFree(const Eigen::Vector3i& id);
   inline bool isKnownOccupied(const Eigen::Vector3i& id);
+
+  void getSurroundPts(const Eigen::Vector3d& pos, Eigen::Vector3d pts[2][2][2], Eigen::Vector3d& diff);
+  // /inline void setLocalRange(Eigen::Vector3d min_pos, Eigen::Vector3d
+  // max_pos);
 
   void initMap(ros::NodeHandle& nh);
 
@@ -169,6 +179,8 @@ public:
 
   void publishUnknown();
   void publishDepth();
+
+  void SegmentGroundPoints(); //AGR
 
   bool hasDepthObservation();
   bool odomValid();
@@ -225,7 +237,7 @@ private:
 
   ros::Subscriber indep_cloud_sub_, indep_odom_sub_;
   ros::Publisher map_pub_, map_inf_pub_;
-  ros::Publisher unknown_pub_;
+  ros::Publisher unknown_pub_, depth_pub_, ground_pub_, obstacle_pub_;
   ros::Timer occ_timer_, vis_timer_;
 
   //
@@ -368,7 +380,7 @@ inline void GridMap::indexToPos(const Eigen::Vector3i& id, Eigen::Vector3d& pos)
 inline void GridMap::inflatePoint(const Eigen::Vector3i& pt, int step, vector<Eigen::Vector3i>& pts) {
   int num = 0;
 
-  /* ---------- + shape inflate ---------- */
+ /* ---------- + shape inflate ---------- */
   // for (int x = -step; x <= step; ++x)
   // {
   //   if (x == 0)

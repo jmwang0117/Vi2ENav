@@ -48,7 +48,8 @@ void GridMap::initMap(ros::NodeHandle &nh)
   node_.param("grid_map/frame_id", mp_.frame_id_, string("world"));
   node_.param("grid_map/local_map_margin", mp_.local_map_margin_, 1);
   //node_.param("grid_map/ground_height", mp_.ground_height_, 1.0);
-  node_.param("grid_map/ground_height", mp_.ground_height_, -0.2);
+  node_.param("grid_map/ground_height", mp_.ground_height_, 0.0);
+  node_.param("grid_map/ground_judge", mp_.ground_judge_, 0.0);
 
   mp_.resolution_inv_ = 1 / mp_.resolution_;
   mp_.map_origin_ = Eigen::Vector3d(-x_size / 2.0, -y_size / 2.0, mp_.ground_height_);
@@ -79,7 +80,8 @@ void GridMap::initMap(ros::NodeHandle &nh)
 
   md_.occupancy_buffer_ = vector<double>(buffer_size, mp_.clamp_min_log_ - mp_.unknown_flag_);
   md_.occupancy_buffer_inflate_ = vector<char>(buffer_size, 0);
-
+  md_.ground_occupancy_buffer_ = vector<Eigen::Vector3d>(buffer_size);
+  
   md_.count_hit_and_miss_ = vector<short>(buffer_size, 0);
   md_.count_hit_ = vector<short>(buffer_size, 0);
   md_.flag_rayend_ = vector<char>(buffer_size, -1);
@@ -87,8 +89,26 @@ void GridMap::initMap(ros::NodeHandle &nh)
 
   md_.raycast_num_ = 0;
 
-  md_.proj_points_.resize(640 * 480 / mp_.skip_pixel_ / mp_.skip_pixel_);
+  md_.proj_points_.resize(640 * 480);
+  md_.proj_points_to_pub.resize(640 * 480 / mp_.skip_pixel_ / mp_.skip_pixel_);
   md_.proj_points_cnt = 0;
+
+  md_.ground_points_to_pub_.resize(640 * 480 / mp_.skip_pixel_ / mp_.skip_pixel_);
+  md_.ground_points_cnt = 0;
+
+  md_.obstacle_points_to_pub_.resize(640 * 480 / mp_.skip_pixel_ / mp_.skip_pixel_);
+  md_.obstacle_points_cnt = 0;
+
+  md_.proj_points_index_.resize(640 * 480);
+  std::fill(md_.proj_points_index_.begin(), md_.proj_points_index_.end(), 0);
+  md_.ground_points_index_.resize(640 * 480);
+  std::fill(md_.ground_points_index_.begin(), md_.ground_points_index_.end(), 0);
+  md_.obstacle_points_index_.resize(640 * 480);
+  std::fill(md_.obstacle_points_index_.begin(), md_.obstacle_points_index_.end(), 0);
+
+  ground_occupied_flag = true;
+
+
   md_.cam2body_ << 0.0, 0.0, 1.0, 0.0,
       -1.0, 0.0, 0.0, 0.0,
       0.0, -1.0, 0.0, -0.02,
@@ -129,7 +149,9 @@ void GridMap::initMap(ros::NodeHandle &nh)
   map_inf_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/grid_map/occupancy_inflate", 10);
 
   unknown_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/grid_map/unknown", 10);
-
+  depth_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/grid_map/depth_cloud", 10);
+  ground_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/grid_map/ground_cloud", 10);
+  obstacle_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/grid_map/obstacle_cloud", 10);
   md_.occ_need_update_ = false;
   md_.local_updated_ = false;
   md_.has_first_depth_ = false;
@@ -197,6 +219,45 @@ int GridMap::setCacheOccupancy(Eigen::Vector3d pos, int occ)
     md_.count_hit_[idx_ctns] += 1;
 
   return idx_ctns;
+}
+
+void GridMap::SegmentGroundPoints(){
+  size_t lowerInd, upperInd;
+  float diffX, diffY, diffZ, angle;
+  md_.ground_points_cnt = 0;
+  md_.obstacle_points_cnt = 0;
+
+  for (int v = mp_.depth_filter_margin_; v < 480 - mp_.depth_filter_margin_;  v += mp_.skip_pixel_) {
+    for (int u = mp_.depth_filter_margin_; u < 640 - mp_.depth_filter_margin_; u += mp_.skip_pixel_) {
+      lowerInd = u+ ( v )*640;
+      upperInd = u+ (v + mp_.skip_pixel_)*640;
+      if(md_.proj_points_index_[lowerInd] == 0 || md_.proj_points_index_[lowerInd] == 0) continue;
+
+      diffX = md_.proj_points_[upperInd][0] - md_.proj_points_[lowerInd][0];
+      diffY = md_.proj_points_[upperInd][1] - md_.proj_points_[lowerInd][1];
+      diffZ = md_.proj_points_[upperInd][2] - md_.proj_points_[lowerInd][2];  
+
+      angle = atan2(diffZ, sqrt(diffX*diffX + diffY*diffY) ) * 180 / M_PI;
+      if (abs(angle) <= 8){
+        if(md_.ground_points_index_[lowerInd] == 1 || md_.ground_points_index_[upperInd] == 1) continue;
+        if(md_.obstacle_points_index_[lowerInd] == 1 || md_.obstacle_points_index_[upperInd] == 1) continue;
+        if(md_.proj_points_[upperInd][2] > mp_.ground_judge_ || md_.proj_points_[lowerInd][2] > mp_.ground_judge_) continue;
+        md_.ground_points_to_pub_[md_.ground_points_cnt++] = md_.proj_points_[lowerInd];
+        md_.ground_points_to_pub_[md_.ground_points_cnt++] = md_.proj_points_[upperInd];
+        md_.ground_points_index_[lowerInd] = 1;
+        md_.ground_points_index_[upperInd] = 1;
+      }
+      else{
+        if(md_.ground_points_index_[lowerInd] == 1 || md_.ground_points_index_[upperInd] == 1) continue;
+        if(md_.obstacle_points_index_[lowerInd] == 1 || md_.obstacle_points_index_[upperInd] == 1) continue;
+        if(md_.proj_points_[upperInd][2] < -0.1 || md_.proj_points_[lowerInd][2] < -0.1) continue;
+        md_.obstacle_points_to_pub_[md_.obstacle_points_cnt++] = md_.proj_points_[lowerInd];
+        md_.obstacle_points_to_pub_[md_.obstacle_points_cnt++] = md_.proj_points_[upperInd];
+        md_.obstacle_points_index_[lowerInd] = 1;
+        md_.obstacle_points_index_[upperInd] = 1;
+      }
+    }
+  }  
 }
 
 void GridMap::projectDepthImage()
@@ -267,18 +328,21 @@ void GridMap::projectDepthImage()
           // filter depth
           // depth += rand_noise_(eng_);
           // if (depth > 0.01) depth += rand_noise2_(eng_);
-
+          double gnd_flag = true;
           if (*row_ptr == 0)
           {
             depth = mp_.max_ray_length_ + 0.1;
           }
           else if (depth < mp_.depth_filter_mindist_)
           {
+             gnd_flag = false;
             continue;
           }
           else if (depth > mp_.depth_filter_maxdist_)
           {
-            depth = mp_.max_ray_length_ + 0.1;
+            gnd_flag = false;
+            //depth = mp_.max_ray_length_ + 0.1;
+            continue;
           }
 
           // project to world frame
@@ -290,36 +354,44 @@ void GridMap::projectDepthImage()
           // if (!isInMap(pt_world)) {
           //   pt_world = closetPointInMap(pt_world, md_.camera_pos_);
           // }
+          
+          //ground buffer
+          if(pt_world(2) < mp_.ground_judge_ && pt_world(2) >=0 && gnd_flag == true){
+            md_.ground_occupancy_buffer_.push_back(pt_world);
+          }
 
-          md_.proj_points_[md_.proj_points_cnt++] = pt_world;
+          md_.proj_index = u + v * cols;
+          md_.proj_points_[md_.proj_index] = pt_world;
+          md_.proj_points_to_pub[md_.proj_points_cnt++] = pt_world; 
+          md_.proj_points_index_[md_.proj_index] = 1;
 
           // check consistency with last image, disabled...
-          if (false)
-          {
-            pt_reproj = last_camera_r_inv * (pt_world - md_.last_camera_pos_);
-            double uu = pt_reproj.x() * mp_.fx_ / pt_reproj.z() + mp_.cx_;
-            double vv = pt_reproj.y() * mp_.fy_ / pt_reproj.z() + mp_.cy_;
+          // if (false)
+          // {
+          //   pt_reproj = last_camera_r_inv * (pt_world - md_.last_camera_pos_);
+          //   double uu = pt_reproj.x() * mp_.fx_ / pt_reproj.z() + mp_.cx_;
+          //   double vv = pt_reproj.y() * mp_.fy_ / pt_reproj.z() + mp_.cy_;
 
-            if (uu >= 0 && uu < cols && vv >= 0 && vv < rows)
-            {
-              if (fabs(md_.last_depth_image_.at<uint16_t>((int)vv, (int)uu) * inv_factor -
-                       pt_reproj.z()) < mp_.depth_filter_tolerance_)
-              {
-                md_.proj_points_[md_.proj_points_cnt++] = pt_world;
-              }
-            }
-            else
-            {
-              md_.proj_points_[md_.proj_points_cnt++] = pt_world;
-            }
-          }
+          //   if (uu >= 0 && uu < cols && vv >= 0 && vv < rows)
+          //   {
+          //     if (fabs(md_.last_depth_image_.at<uint16_t>((int)vv, (int)uu) * inv_factor -
+          //              pt_reproj.z()) < mp_.depth_filter_tolerance_)
+          //     {
+          //       md_.proj_points_[md_.proj_points_cnt++] = pt_world;
+          //     }
+          //   }
+          //   else
+          //   {
+          //     md_.proj_points_[md_.proj_points_cnt++] = pt_world;
+          //   }
+          // }
         }
       }
     }
   }
 
   /* maintain camera pose for consistency check */
-
+   SegmentGroundPoints();
   md_.last_camera_pos_ = md_.camera_pos_;
   md_.last_camera_q_ = md_.camera_q_;
   md_.last_depth_image_ = md_.depth_image_;
@@ -649,6 +721,7 @@ void GridMap::visCallback(const ros::TimerEvent & /*event*/)
 
   publishMap();
   publishMapInflate(true);
+  publishDepth();
 }
 
 void GridMap::updateOccupancyCallback(const ros::TimerEvent & /*event*/)
@@ -716,6 +789,7 @@ void GridMap::depthPoseCallback(const sensor_msgs::ImageConstPtr &img,
     md_.occ_need_update_ = false;
   }
 }
+
 void GridMap::odomCallback(const nav_msgs::OdometryConstPtr &odom)
 {
   if (md_.has_first_depth_)
@@ -965,6 +1039,73 @@ void GridMap::publishUnknown()
   unknown_pub_.publish(cloud_msg);
 }
 
+void GridMap::publishDepth() {
+  pcl::PointXYZ pt;
+  pcl::PointCloud<pcl::PointXYZ> cloud, ground_cloud, obstacle_cloud;
+
+  for (int i = 0; i < md_.proj_points_cnt; ++i) {
+    pt.x = md_.proj_points_to_pub[i][0];
+    pt.y = md_.proj_points_to_pub[i][1];
+    pt.z = md_.proj_points_to_pub[i][2];
+    cloud.push_back(pt);
+  }
+  // cout << "total: " << md_.proj_points_cnt << endl;
+
+  cloud.width = cloud.points.size();
+  cloud.height = 1;
+  cloud.is_dense = true;
+  cloud.header.frame_id = mp_.frame_id_;
+
+  sensor_msgs::PointCloud2 cloud_msg;
+  pcl::toROSMsg(cloud, cloud_msg);
+  depth_pub_.publish(cloud_msg);
+
+  md_.proj_points_.clear();
+
+  std::fill(md_.proj_points_index_.begin(), md_.proj_points_index_.end(), 0);
+
+  //ground
+  for (int i = 0; i < md_.ground_points_cnt; ++i) {
+    pt.x = md_.ground_points_to_pub_[i][0];
+    pt.y = md_.ground_points_to_pub_[i][1];
+    pt.z = md_.ground_points_to_pub_[i][2];
+    ground_cloud.push_back(pt);
+  } 
+
+  ground_cloud.width = ground_cloud.points.size();
+  ground_cloud.height = 1;
+  ground_cloud.is_dense = true;
+  ground_cloud.header.frame_id = "world";
+ 
+  // cout << "gnd: " << md_.ground_points_cnt << endl;
+
+  sensor_msgs::PointCloud2 ground_cloud_msg;
+  pcl::toROSMsg(ground_cloud, ground_cloud_msg);
+  ground_pub_.publish(ground_cloud_msg);
+
+  std::fill(md_.ground_points_index_.begin(), md_.ground_points_index_.end(), 0);
+
+  //obstacle
+  for (int i = 0; i < md_.obstacle_points_cnt; ++i) {
+    pt.x = md_.obstacle_points_to_pub_[i][0];
+    pt.y = md_.obstacle_points_to_pub_[i][1];
+    pt.z = md_.obstacle_points_to_pub_[i][2];
+    obstacle_cloud.push_back(pt);
+  } 
+
+  obstacle_cloud.width = obstacle_cloud.points.size();
+  obstacle_cloud.height = 1;
+  obstacle_cloud.is_dense = true;
+  obstacle_cloud.header.frame_id = "world";
+
+  sensor_msgs::PointCloud2 obstacle_cloud_msg;
+  pcl::toROSMsg(obstacle_cloud, obstacle_cloud_msg);
+  obstacle_pub_.publish(obstacle_cloud_msg);
+  // cout << "obs: " << md_.obstacle_points_cnt << endl;
+
+  std::fill(md_.obstacle_points_index_.begin(), md_.obstacle_points_index_.end(), 0);
+}
+
 bool GridMap::odomValid() { return md_.has_odom_; }
 
 bool GridMap::hasDepthObservation() { return md_.has_first_depth_; }
@@ -978,6 +1119,33 @@ Eigen::Vector3d GridMap::getOrigin() { return mp_.map_origin_; }
 void GridMap::getRegion(Eigen::Vector3d &ori, Eigen::Vector3d &size)
 {
   ori = mp_.map_origin_, size = mp_.map_size_;
+}
+
+void GridMap::getSurroundPts(const Eigen::Vector3d& pos, Eigen::Vector3d pts[2][2][2],
+                            Eigen::Vector3d& diff) {
+  if (!isInMap(pos)) {
+    // cout << "pos invalid for interpolation." << endl;
+  }
+
+  /* interpolation position */
+  Eigen::Vector3d pos_m = pos - 0.5 * mp_.resolution_ * Eigen::Vector3d::Ones();
+  Eigen::Vector3i idx;
+  Eigen::Vector3d idx_pos;
+
+  posToIndex(pos_m, idx);
+  indexToPos(idx, idx_pos);
+  diff = (pos - idx_pos) * mp_.resolution_inv_;
+
+  for (int x = 0; x < 2; x++) {
+    for (int y = 0; y < 2; y++) {
+      for (int z = 0; z < 2; z++) {
+        Eigen::Vector3i current_idx = idx + Eigen::Vector3i(x, y, z);
+        Eigen::Vector3d current_pos;
+        indexToPos(current_idx, current_pos);
+        pts[x][y][z] = current_pos;
+      }
+    }
+  }
 }
 
 void GridMap::depthOdomCallback(const sensor_msgs::ImageConstPtr &img,

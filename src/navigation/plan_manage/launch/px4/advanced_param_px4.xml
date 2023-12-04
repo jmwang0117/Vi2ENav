@@ -79,7 +79,7 @@
     <param name="grid_map/local_update_range_z"  value="4.5" /> 
     <param name="grid_map/obstacles_inflation"     value="0.08" /> 
     <param name="grid_map/local_map_margin" value="30"/>
-    <param name="grid_map/ground_height"        value="0.05"/>
+    <param name="grid_map/ground_height"        value="-0.1"/>
     <!-- camera parameter -->
     <param name="grid_map/cx" value="$(arg cx)"/>
     <param name="grid_map/cy" value="$(arg cy)"/>
@@ -107,6 +107,8 @@
     <param name="grid_map/show_occ_time"  value="false"/>
     <param name="grid_map/pose_type"     value="1"/>  
     <param name="grid_map/frame_id"      value="world"/>
+    <param name="grid_map/ground_judge" value="$(arg ground_judge)" type="double"/>
+
 
   <!-- planner manager -->
     <param name="manager/max_vel" value="$(arg max_vel)" type="double"/>
