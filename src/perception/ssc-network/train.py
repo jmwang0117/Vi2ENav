@@ -21,7 +21,7 @@ from utils.optimizer import build_optimizer, build_scheduler
 from utils.io_tools import dict_to
 from utils.metrics import Metrics
 import utils.checkpoint as checkpoint
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"  # Specify the fourth GPU
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"  # Specify the fourth GPU
 
 def parse_args():
     parser = argparse.ArgumentParser(description='DSC training')
@@ -263,9 +263,9 @@ def validate(model, dset, _cfg, epoch, logger, tbwriter, metrics):
 
         mIoU_1_1 = metrics.get_semantics_mIoU('1_1')
         IoU_1_1 = metrics.get_occupancy_IoU('1_1')
-        if mIoU_1_1 > _cfg._dict['OUTPUT']['BEST_METRIC']:
-            logger.info('=> Best metric on validation set encountered: ({} > {})'.format(mIoU_1_1, _cfg._dict['OUTPUT']['BEST_METRIC']))
-            _cfg._dict['OUTPUT']['BEST_METRIC'] = mIoU_1_1.item()
+        if IoU_1_1 > _cfg._dict['OUTPUT']['BEST_METRIC']:
+            logger.info('=> Best metric on validation set encountered: ({} > {})'.format(IoU_1_1, _cfg._dict['OUTPUT']['BEST_METRIC']))
+            _cfg._dict['OUTPUT']['BEST_METRIC'] = IoU_1_1.item()
             checkpoint_info['best-metric'] = 'BEST_METRIC'
             metrics.update_best_metric_record(mIoU_1_1, IoU_1_1, epoch_loss.item(), epoch)
 

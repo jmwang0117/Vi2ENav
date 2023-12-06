@@ -4,7 +4,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from dropblock import DropBlock2D
 
-from networks.CrissCrossAttention import CrissCrossAttention
 
 class BEVFusion(nn.Module):
     def __init__(self):
@@ -102,32 +101,6 @@ class BEVFusionv1(nn.Module):
             + torch.mul(com_features, attn_com)
 
         return fusion_features
-
-
-# class BEVFusionv1(nn.Module):
-#     def __init__(self, channel):
-#         super().__init__()
-
-#         self.criss_cross_attention_bev = CrissCrossAttention(channel)
-#         self.criss_cross_attention_sem = CrissCrossAttention(channel)
-#         self.criss_cross_attention_com = CrissCrossAttention(channel)
-
-#         self.adapter_sem = nn.Conv2d(channel // 2, channel, 1)
-#         self.adapter_com = nn.Conv2d(channel // 2, channel, 1)
-
-#     def forward(self, bev_features, sem_features, com_features):
-#         sem_features = self.adapter_sem(sem_features)
-#         com_features = self.adapter_com(com_features)
-
-#         attn_bev = self.criss_cross_attention_bev(bev_features)
-#         attn_sem = self.criss_cross_attention_sem(sem_features)
-#         attn_com = self.criss_cross_attention_com(com_features)
-
-#         fusion_features = torch.mul(bev_features, attn_bev) \
-#             + torch.mul(sem_features, attn_sem) \
-#             + torch.mul(com_features, attn_com)
-
-#         return fusion_features
 
 
 class BEVUNetv1(nn.Module):

@@ -1,1 +1,1 @@
-python validate.py --weights /root/SSC-RS/weights/weights_epoch_035.pth --dset_root /root/datasets/semantic_kitti/dataset/sequences
+python validate.py --weights /root/Vi2ENav/src/perception/ssc-network/outputs/DSC-AFC_SemanticKITTI_1201_131401/chkpt/75/weights_epoch_075.pth --dset_root /root/datasets/semantic_kitti/dataset/sequences
