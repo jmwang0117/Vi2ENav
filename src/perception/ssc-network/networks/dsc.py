@@ -97,8 +97,11 @@ class DSC(nn.Module):
 
     def weights_initializer(self, m):
         if isinstance(m, nn.Conv2d):
-            nn.init.kaiming_uniform_(m.weight)
-            nn.init.zeros_(m.bias)
+            # Initialize weights for Conv2d layers (example)
+            nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            if m.bias is not None:
+                # Only initialize bias if it's not None
+                nn.init.zeros_(m.bias)
 
     def weights_init(self):
         self.apply(self.weights_initializer)

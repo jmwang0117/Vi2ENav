@@ -3,7 +3,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from dropblock import DropBlock2D
-
+from networks.DAT import DAT
+from networks.CrissCrossAttention import CrissCrossAttention
 
 class BEVFusion(nn.Module):
     def __init__(self):
@@ -11,7 +12,7 @@ class BEVFusion(nn.Module):
 
     def forward(self, bev_features, sem_features, com_features):
         return torch.cat([bev_features, sem_features, com_features], dim=1)
-
+    
     @staticmethod
     def channel_reduction(x, out_channels):
         """
@@ -70,7 +71,7 @@ class BEVFusionv1(nn.Module):
         super().__init__()
 
         self.attention_bev = nn.Sequential(
-             nn.AdaptiveAvgPool2d(1),
+            nn.AdaptiveAvgPool2d(1),
             nn.Conv2d(channel, channel, kernel_size=1),
             nn.Sigmoid()
         )
@@ -87,6 +88,8 @@ class BEVFusionv1(nn.Module):
 
         self.adapter_sem = nn.Conv2d(channel//2, channel, 1)
         self.adapter_com = nn.Conv2d(channel//2, channel, 1)
+        
+        self.criss_cross_attention = CrissCrossAttention(channel) # CCA
 
     def forward(self, bev_features, sem_features, com_features):
         sem_features = self.adapter_sem(sem_features)
@@ -99,7 +102,9 @@ class BEVFusionv1(nn.Module):
         fusion_features = torch.mul(bev_features, attn_bev) \
             + torch.mul(sem_features, attn_sem) \
             + torch.mul(com_features, attn_com)
-
+       
+        fusion_features = self.criss_cross_attention(fusion_features)
+      
         return fusion_features
 
 
