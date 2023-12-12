@@ -71,24 +71,24 @@ OPTIMIZER:
   TYPE: Adam
   WEIGHT_DECAY: NA
 OUTPUT:
-  BEST_LOSS: 8.778205871582031
-  BEST_METRIC: 0.49630942223505575
-  OUTPUT_PATH: ./outputs/DSC-AFC_SemanticKITTI_1212_085259
+  BEST_LOSS: 7.04756498336792
+  BEST_METRIC: 0.5867039203096723
+  OUTPUT_PATH: ./outputs/DSC-AFC_SemanticKITTI_1206_190338
   OUT_ROOT: ./outputs/
 SCHEDULER:
   FREQUENCY: epoch
   LR_POWER: 0.98
   TYPE: power_iteration
 STATUS:
-  BEST_LOSS: ./outputs/DSC-AFC_SemanticKITTI_1212_085259/chkpt/best-loss
-  BEST_METRIC: ./outputs/DSC-AFC_SemanticKITTI_1212_085259/chkpt/best-metric
-  CONFIG: /root/Vi2ENav/src/perception/ssc-network/cfgs/DSC-Base.yaml
-  LAST: ./outputs/DSC-AFC_SemanticKITTI_1212_085259/chkpt/last
+  BEST_LOSS: ./outputs/DSC-AFC_SemanticKITTI_1206_190338/chkpt/best-loss
+  BEST_METRIC: ./outputs/DSC-AFC_SemanticKITTI_1206_190338/chkpt/best-metric
+  CONFIG: ./outputs/DSC-AFC_SemanticKITTI_1206_190338/config.yaml
+  LAST: ./outputs/DSC-AFC_SemanticKITTI_1206_190338/chkpt/last
   RESUME: true
 TRAIN:
   BATCH_SIZE: 8
-  CHECKPOINT_PERIOD: 10
-  EPOCHS: 80
+  CHECKPOINT_PERIOD: 15
+  EPOCHS: 100
   SUMMARY_PERIOD: 50
 VAL:
   BATCH_SIZE: 8

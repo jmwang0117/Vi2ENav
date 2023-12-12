@@ -5,7 +5,7 @@ import torch.nn as nn
 import sys
 import numpy as np
 import time
-
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"  
 # Append root directory to system path for imports
 repo_path, _ = os.path.split(os.path.realpath(__file__))
 repo_path, _ = os.path.split(repo_path)
